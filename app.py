@@ -56,45 +56,52 @@ class PyVars:
     items_id_dict = dict()
     for i in items:
         items_id_dict[i.sendid + " " + str(i.id)] = i.price
+    def refresh():
+        with app.app_context(): # To use all sebze prices, we need to load first
+            items = Sebze.query.all()
+        for i in items:
+            PyVars.items_id_dict[i.sendid + " " + str(i.id)] = i.price
+            PyVars.items_dict[i.sendid] = i.price
+        return
 
 print(PyVars.items_id_dict)
 @app.route('/', methods=['POST','GET'])
 
 def index():
-    with app.app_context(): # To use all sebze prices, we need to load first
-        items = Sebze.query.all()
-    for i in items:
-        PyVars.items_id_dict[i.sendid + " " + str(i.id)] = i.price
-        PyVars.items_dict[i.sendid] = i.price
+    PyVars.refresh()
     if request.method == "POST":
         
-        img = Image.open("pillow\main_schema.png")
+        #       IMAGE CREATION SIDE        #
+        
+        img = Image.open("pillow/main_schema.png")
+        up_arr = Image.open("pillow/up.png")
+        down_arr = Image.open("pillow/down.png")
+        eq_arr = Image.open("pillow/eq.png")
+        
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype("pillow/font.ttf", 20)
         
-        item_send_biber_once = dict()
-        item_send_domates_once = dict()
-        item_send_salatalik_once = dict()
+        def request_for(input_list,once):
+            output_dict = dict()
+            if once == True:
+                for i in input_list:
+                    output_dict[i] = request.form[i+'-once']
+                    
+            else:
+                for i in input_list:
+                    output_dict[i] = request.form[i+'-bugun']
+            return output_dict
+                
         baslik = request.form['date']
-        for item in biberler.values():
-            item_send_biber_once[item] = request.form[item+'-once']
-        for item in domatesler.values():
-            item_send_domates_once[item] = request.form[item+'-once']
-        for item in salataliklar.values():
-            item_send_salatalik_once[item] = request.form[item+'-once']
-            
+        
+        item_send_biber_once = request_for(biberler.values(),once=True)
+        item_send_domates_once = request_for(domatesler.values(),once=True)
+        item_send_salatalik_once = request_for(salataliklar.values(),once=True)
         patlican_once= request.form['patlican-once']
         
-        item_send_biber_bugun = dict()
-        item_send_domates_bugun = dict()
-        item_send_salatalik_bugun = dict()
-        for item in biberler.values():
-            item_send_biber_bugun[item] = request.form[item+'-bugun']
-        for item in domatesler.values():
-            item_send_domates_bugun[item] = request.form[item+'-bugun']
-        for item in salataliklar.values():
-            item_send_salatalik_bugun[item] = request.form[item+'-bugun']
-            
+        item_send_biber_bugun = request_for(biberler.values(),once=False)
+        item_send_domates_bugun = request_for(domatesler.values(),once=False)
+        item_send_salatalik_bugun = request_for(salataliklar.values(),once=False)
         patlican_bugun = request.form['patlican-bugun']
         
         def draw_table(start_x,start_y,str_list,suffix,color,font,line=0,lineadder=31):
@@ -102,6 +109,7 @@ def index():
                 draw.text((start_x, start_y+line), i+suffix, fill=color, font=font,anchor='rt')
                 line+=lineadder
             return
+        
         draw_table(354,253,item_send_biber_once.values()," TL",(255, 0, 0),font)
         draw_table(854,253,item_send_domates_once.values()," TL",(255, 0, 0),font)
         draw_table(854,423,item_send_salatalik_once.values()," TL",(255, 0, 0),font)
@@ -116,36 +124,20 @@ def index():
         
         img.save('static/yazili_resim.png')
         
-        idcount=1
-        for item in item_send_biber_bugun.values():
-            with app.app_context():
-                item_to_update = db.session.get(Sebze, idcount)  
-                if item_to_update:
-                    item_to_update.price = float(item)
-                    db.session.commit()
+        #   SQL SIDE    #
+
+        def sql_edit(input_list,obje):
+            idcount=1
+            for item in input_list:
+                with app.app_context():
+                    item_to_update = db.session.get(obje, idcount)  
+                    if item_to_update:
+                        item_to_update.price = float(item)
+                        db.session.commit()
                 idcount+=1
+            return
         
-        for item in item_send_domates_bugun.values():
-            with app.app_context():
-                item_to_update = db.session.get(Sebze, idcount)  
-                if item_to_update:
-                    item_to_update.price = float(item)
-                    db.session.commit()
-            idcount+=1
-            
-        for item in item_send_salatalik_bugun.values():
-            with app.app_context():
-                item_to_update = db.session.get(Sebze, idcount)
-                if item_to_update:
-                    item_to_update.price = float(item)
-                    db.session.commit()
-            idcount+=1
-            
-        with app.app_context():
-            item_to_update = db.session.get(Sebze,idcount)
-            if item_to_update:
-                item_to_update.price = float(patlican_bugun)
-                db.session.commit()
+        sql_edit(list(item_send_biber_bugun.values())+list( item_send_domates_bugun.values())+list(item_send_salatalik_bugun.values())+[patlican_bugun],Sebze)
         
         return redirect('/success/')
     else:
