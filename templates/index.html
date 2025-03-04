@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=
+    , initial-scale=1.0">
+    <meta name="author" description="Koray Kıllı">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Demre Toptancı Hal Fiyat Editörü</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+    <h1>Kızılağaç Tarım Piyasa Tablosu Oluşturucu</h1>
+    <form action="/" method="POST">
+
+        Başlık Metni (Tarih): <input type="text" class="tarih" name="date" id="date" placeholder="Örn: 25 ŞUBAT 2025 PERŞEMBE" required>
+     <table>
+        <tr>
+            <th id="title-biber">Biberler (₺)</th>
+            <th>Önce</th>
+            <th>Bugün</th>
+        </tr>
+        {% for i in biberler.keys() %}
+        <tr>
+            <th>{{i}}</th>
+            <td><input type="text" name="{{biberler[i]}}-once" id="{{biberler[i]}}-once" value="{{items_dict[biberler[i]]}}" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="text" name="{{biberler[i]}}-bugun" id="{{biberler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            
+        </tr>
+        {% endfor %}
+     </table>
+     <br>
+     <table>
+        <tr>
+            <th id="title-domates">Domatesler (₺)</th>
+            <th>Önce</th>
+            <th>Bugün</th>
+        </tr>
+        {% for i in domatesler.keys() %}
+        <tr>
+            <th>{{i}}</th>
+            <td><input type="text" name="{{domatesler[i]}}-once" id="{{domatesler[i]}}-once" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off"></td>
+            <td><input type="text" name="{{domatesler[i]}}-bugun" id="{{domatesler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            
+        </tr>
+        {% endfor %}
+        
+     </table>
+     <br>
+     <table>
+        <tr>
+            <th id="title-salata">Salatalıklar (₺)</th>
+            <th>Önce</th>
+            <th>Bugün</th>
+        </tr>
+        {% for i in salataliklar.keys() %}
+        <tr>
+            <th>{{i}}</th>
+            <td><input type="text" name="{{salataliklar[i]}}-once" id="{{salataliklar[i]}}-once" value = "{{items_dict[salataliklar[i]]}}" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="text" name="{{salataliklar[i]}}-bugun" id="{{salataliklar[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            
+        </tr>
+        {% endfor %}
+        
+     </table>
+     <br>
+     <table>
+        <tr>
+            <th id="title-patlican">Patlıcanlar (₺)</th>
+            <th>Önce</th>
+            <th>Bugün</th>
+        </tr>
+        <tr>
+            <th>Patlıcan</th>
+            <td><input type="text" name="patlican-once" id="patlican-once" value="{{items_dict['patlican']}}" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="text" name="patlican-bugun" id="patlican-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            
+        </tr>
+        
+     </table>
+     <br>
+     <input type="submit" value="Tabloyu Oluştur">
+        </form>
+        <p>&copy; 2025 koray-killi tarafından Kızılağaç Tarım için yapılmıştır.</p>
+    </div>
+    
+</body>
+</html>
