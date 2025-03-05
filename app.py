@@ -210,7 +210,7 @@ def resim():
 
 if __name__ == "__main__":
     if Heroku == False:
-        app.run(debug=True)
+        app.run(host='0.0.0.0', port=5000, debug=True)
     else:
         app.run()
     
