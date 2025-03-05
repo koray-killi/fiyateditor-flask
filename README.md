@@ -53,7 +53,7 @@ http://127.0.0.1:5000
 
 - [x] **Flask Backend** (Completed ✅)
 - [x] **SQLite Database Integration** (Completed ✅)
-- [ ] **HTML,CSS Basic Frontend**
+- [x] **HTML,CSS Basic Frontend**
 - [ ] **Admin Panel Implementation** 
 - [ ] **Graphical Reporting System**
 
