@@ -1,2 +1,5 @@
-for i in list(range(1,3)) + list(range(3,5)):
-    print(i)
+ahmet = {'a':1,
+         'b':2,
+         'c':3}
+
+ahmet.

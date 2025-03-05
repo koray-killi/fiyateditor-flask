@@ -5,6 +5,14 @@ import pytz
 from PIL import Image, ImageDraw, ImageFont
 
 # Sebze Listeleri
+Heroku = False
+
+class Fiyatlar:
+    def __init__(self,isim,dun,bugun):
+        self.isim = isim
+        self.dun = float(dun)
+        self.bugun = float(bugun)
+
 
 biberler = {"Çarli Biber":"carli",
             "Sarı Acı Çarli":"sari-aci-carli",
@@ -72,11 +80,26 @@ def index():
     if request.method == "POST":
         
         #       IMAGE CREATION SIDE        #
-        
-        img = Image.open("pillow/main_schema.png")
-        up_arr = Image.open("pillow/up.png")
-        down_arr = Image.open("pillow/down.png")
-        eq_arr = Image.open("pillow/eq.png")
+        def transparant_maker(image_way):
+            img = Image.open(image_way) 
+            rgba = img.convert("RGBA")
+            datas = rgba.getdata()
+            newData = [] 
+            for item in datas: 
+                if item[0] == 0 and item[1] == 0 and item[2] == 0:  # finding black colour by its RGB value 
+                    # storing a transparent value when we find a black colour 
+                    newData.append((255, 255, 255, 0)) 
+                else: 
+                    newData.append(item)  # other colours remain unchanged 
+            
+            rgba.putdata(newData) 
+            return rgba
+            
+            
+        img= Image.open("pillow/main_schema.png").convert("RGBA")
+        up_arr = Image.open("pillow/up.png").convert("RGBA")
+        down_arr = Image.open("pillow/down.png").convert("RGBA")
+        eq_arr = Image.open("pillow/eq.png").convert("RGBA")
         
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype("pillow/font.ttf", 20)
@@ -91,7 +114,13 @@ def index():
                 for i in input_list:
                     output_dict[i] = request.form[i+'-bugun']
             return output_dict
-                
+        
+        def class_request_for(input_list):
+            output_list=list()
+            for i in input_list:
+                output_list.append(Fiyatlar(i,request.form[i+'-once'],request.form[i+'-bugun']))
+            return output_list  
+
         baslik = request.form['date']
         
         item_send_biber_once = request_for(biberler.values(),once=True)
@@ -103,28 +132,55 @@ def index():
         item_send_domates_bugun = request_for(domatesler.values(),once=False)
         item_send_salatalik_bugun = request_for(salataliklar.values(),once=False)
         patlican_bugun = request.form['patlican-bugun']
+            
+        def draw_table(start_x,start_y,str_dict,color,font,once,line=0,lineadder=31,compress_list=None,suffix=" TL",single=False,ex_args=list()):
+            print(ex_args)
+            if single == True:
+                draw.text((start_x, start_y+line), str_dict+suffix, fill=color, font=font,anchor='rt')
+                if once==True:
+                    if compress_list.dun<compress_list.bugun:
+                        img.paste(up_arr,(start_x+18,start_y+line-4), up_arr)
+                    elif compress_list.dun>compress_list.bugun:
+                        img.paste(down_arr,(start_x+18,start_y+line-4), down_arr)
+                    else:
+                        img.paste(eq_arr,(start_x+18,start_y+line-7), eq_arr)
+                        
+                return
         
-        def draw_table(start_x,start_y,str_list,suffix,color,font,line=0,lineadder=31):
-            for i in str_list:
+            for j,i in str_dict.items():
                 draw.text((start_x, start_y+line), i+suffix, fill=color, font=font,anchor='rt')
+                item_index = list(str_dict.keys()).index(j)
+                
+                if once==True:
+                    print(f'Karşılaştırılan:{compress_list[item_index].isim}\n Önce Fiyat: {compress_list[item_index].dun}, Bugün Fiyat: {compress_list[item_index].bugun}')
+                    if compress_list[item_index].dun<compress_list[item_index].bugun:
+                        img.paste(up_arr,(start_x+18,start_y+line-4), up_arr)
+                    elif compress_list[item_index].dun>compress_list[item_index].bugun:
+                        img.paste(down_arr,(start_x+18,start_y+line-4), down_arr)
+                    else:
+                        img.paste(eq_arr,(start_x+18,start_y+line-7), eq_arr)
                 line+=lineadder
             return
+
+        # Drawing old values
+        draw_table(354,253,item_send_biber_once,(50, 141, 168),font,once=True,compress_list=class_request_for(biberler.values()))
+        draw_table(854,253,item_send_domates_once,(50, 141, 168),font,once=True,compress_list=class_request_for(domatesler.values()))
+        draw_table(854,423,item_send_salatalik_once,(50, 141, 168),font,once=True,compress_list=class_request_for(salataliklar.values()))
+        draw_table(854,528,patlican_once,(50, 141, 168),font,once=True,compress_list=Fiyatlar('patlican',patlican_once,patlican_bugun),single=True)
         
-        draw_table(354,253,item_send_biber_once.values()," TL",(255, 0, 0),font)
-        draw_table(854,253,item_send_domates_once.values()," TL",(255, 0, 0),font)
-        draw_table(854,423,item_send_salatalik_once.values()," TL",(255, 0, 0),font)
-        draw.text((854,528), patlican_once+ " TL", fill=(255, 0, 0), font=font,anchor='rt')
+        # Drawing Today values and arrows
+        draw_table(464,253,item_send_biber_bugun,(0, 0, 0),font,once=False)
+        draw_table(964,253,item_send_domates_bugun,(0, 0, 0),font,once=False)
+        draw_table(964,423,item_send_salatalik_bugun,(0, 0, 0),font,once=False)
+        draw_table(964,528,patlican_bugun,(0, 0, 0),font,once=False,single=True)
         
-        draw_table(464,253,item_send_biber_bugun.values()," TL",(255, 0, 0),font)
-        draw_table(964,253,item_send_domates_bugun.values()," TL",(255, 0, 0),font)
-        draw_table(964,423,item_send_salatalik_bugun.values()," TL",(255, 0, 0),font)
-        draw.text((964,528), patlican_bugun+ " TL", fill=(255, 0, 0), font=font,anchor='rt')
+        # Drawing title
         font = ImageFont.truetype("pillow/font.ttf", 58)
         draw.text((500,45), baslik, fill=(255, 255, 255), font=font,anchor='mm')
         
         img.save('static/yazili_resim.png')
         
-        #   SQL SIDE    #
+        #       SQL SIDE        #
 
         def sql_edit(input_list,obje):
             idcount=1
@@ -153,6 +209,9 @@ def resim():
     return redirect('static/yazili_resim.png')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    if Heroku == False:
+        app.run(debug=True)
+    else:
+        app.run()
     
 
