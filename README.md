@@ -1,6 +1,6 @@
 # 📊 Demre Wholesale Market Price Tracking System
 
-This project is a **Flask-based web application** designed for **tracking and updating daily wholesale market prices** for Demre Wholesale Market. It utilizes SQLAlchemy for database management and features a user-friendly interface. 🚀
+This project is a **Flask-based web application** designed for **visualizing daily wholesale market prices** for Demre Wholesale Market. It utilizes SQLAlchemy for database management and features a user-friendly interface. 🚀
 
 ---
 
