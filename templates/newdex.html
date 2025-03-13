@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="container">
-    <h1>Kızılağaç Tarım Piyasa Tablosu Oluşturucu</h1>
+    <h1>Kızılağaç Tarıms Piyasa Tablosu Oluşturucu</h1>
     <form action="/" method="POST">
 
         Başlık Metni (Tarih): <input type="text" class="tarih" name="date" id="date" placeholder="Örn: 25 ŞUBAT 2025 PERŞEMBE" required>
@@ -26,8 +26,8 @@
         {% for i in biberler.keys() %}
         <tr>
             <th>{{i}}</th>
-            <td><input type="number" step="0.01" name="{{biberler[i]}}-once" id="{{biberler[i]}}-once" value="{{items_dict[biberler[i]]}}" placeholder="Örn 10.54" required autocomplete="off"></td>
-            <td><input type="number" step="0.01" name="{{biberler[i]}}-bugun" id="{{biberler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="number" name="{{biberler[i]}}-once" id="{{biberler[i]}}-once" value="{{items_dict[biberler[i]]}}" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="number" name="{{biberler[i]}}-bugun" id="{{biberler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
             
         </tr>
         {% endfor %}
@@ -43,16 +43,17 @@
         {% if domatesler[i] == 'domates-salkim' %}
         <tr>
             <th>{{i}}</th>
-            <td><input type="number" step="0.01" name="{{domatesler[i]}}-once" id="{{domatesler[i]}}-once" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off">
-                <input type="number" step="0.01" name="{{domatesler[i]}}-max-once" id="{{domatesler[i]}}-max-once" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off"></td>
-            <td><input type="number" step="0.01" name="{{domatesler[i]}}-bugun" id="{{domatesler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off">
-                <input type="number" step="0.01" name="{{domatesler[i]}}-max-bugun" id="{{domatesler[i]}}-max-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>   
+            <td><input type="number" name="{{domatesler[i]}}-once" id="{{domatesler[i]}}-once" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off">
+                <input type="number" name="{{domatesler[i]}}-once-ust" id="{{domatesler[i]}}-once-ust" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off"></td>
+            <td><input type="number" name="{{domatesler[i]}}-bugun" id="{{domatesler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off">
+                <input type="number" name="{{domatesler[i]}}-bugun-ust" id="{{domatesler[i]}}-bugun-ust" placeholder="Örn 10.54" required autocomplete="off"></td>   
         </tr>
         {% else %}
+        <p>{{domatesler[i]}}</p>
         <tr>
             <th>{{i}}</th>
-            <td><input type="number" step="0.01" name="{{domatesler[i]}}-once" id="{{domatesler[i]}}-once" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off"></td>
-            <td><input type="number" step="0.01" name="{{domatesler[i]}}-bugun" id="{{domatesler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="number" name="{{domatesler[i]}}-once" id="{{domatesler[i]}}-once" placeholder="Örn 10.54" value="{{items_dict[domatesler[i]]}}" autocomplete="off"></td>
+            <td><input type="number" name="{{domatesler[i]}}-bugun" id="{{domatesler[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
             
         </tr>
         {% endif %}
@@ -69,8 +70,8 @@
         {% for i in salataliklar.keys() %}
         <tr>
             <th>{{i}}</th>
-            <td><input type="number" step="0.01" name="{{salataliklar[i]}}-once" id="{{salataliklar[i]}}-once" value = "{{items_dict[salataliklar[i]]}}" placeholder="Örn 10.54" required autocomplete="off"></td>
-            <td><input type="number" step="0.01" name="{{salataliklar[i]}}-bugun" id="{{salataliklar[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="number" name="{{salataliklar[i]}}-once" id="{{salataliklar[i]}}-once" value = "{{items_dict[salataliklar[i]]}}" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="number" name="{{salataliklar[i]}}-bugun" id="{{salataliklar[i]}}-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
             
         </tr>
         {% endfor %}
@@ -85,8 +86,8 @@
         </tr>
         <tr>
             <th>Patlıcan</th>
-            <td><input type="number" step="0.01" name="patlican-once" id="patlican-once" value="{{items_dict['patlican']}}" placeholder="Örn 10.54" required autocomplete="off"></td>
-            <td><input type="number" step="0.01" name="patlican-bugun" id="patlican-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="text" name="patlican-once" id="patlican-once" value="{{items_dict['patlican']}}" placeholder="Örn 10.54" required autocomplete="off"></td>
+            <td><input type="text" name="patlican-bugun" id="patlican-bugun" placeholder="Örn 10.54" required autocomplete="off"></td>
             
         </tr>
         

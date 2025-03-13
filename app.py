@@ -4,8 +4,10 @@ from datetime import datetime
 import pytz
 from PIL import Image, ImageDraw, ImageFont
 
+RunNet = False
+
 # Sebze Listeleri
-Heroku = False
+
 
 class Fiyatlar:
     def __init__(self,isim,dun,bugun):
@@ -102,7 +104,7 @@ def index():
         eq_arr = Image.open("pillow/eq.png").convert("RGBA")
         
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype("pillow/font.ttf", 20)
+        font = ImageFont.truetype("pillow/font.ttf", 18)
         
         def request_for(input_list,once):
             output_dict = dict()
@@ -127,13 +129,15 @@ def index():
         item_send_domates_once = request_for(domatesler.values(),once=True)
         item_send_salatalik_once = request_for(salataliklar.values(),once=True)
         patlican_once= request.form['patlican-once']
+        salkim_max_once = request.form['domates-salkim-max-once']
         
         item_send_biber_bugun = request_for(biberler.values(),once=False)
         item_send_domates_bugun = request_for(domatesler.values(),once=False)
         item_send_salatalik_bugun = request_for(salataliklar.values(),once=False)
         patlican_bugun = request.form['patlican-bugun']
+        salkim_max_bugun = request.form['domates-salkim-max-bugun']
             
-        def draw_table(start_x,start_y,str_dict,color,font,once,line=0,lineadder=31,compress_list=None,suffix=" TL",single=False,ex_args=list()):
+        def draw_table(start_x,start_y,str_dict,color,font,once,line=0,lineadder=31,compress_list=None,suffix=" TL",single=False,ex_args=None,ex_blank=None,font_size=None):
             print(ex_args)
             if single == True:
                 draw.text((start_x, start_y+line), str_dict+suffix, fill=color, font=font,anchor='rt')
@@ -148,11 +152,17 @@ def index():
                 return
         
             for j,i in str_dict.items():
-                draw.text((start_x, start_y+line), i+suffix, fill=color, font=font,anchor='rt')
+                print(i,j)
+                if ex_args != None:
+                    if j == ex_args:
+                        draw.text((start_x-ex_blank, start_y+line), i+suffix, fill=color, font=ImageFont.truetype("pillow/font.ttf", font_size),anchor='rt')
+                        print(start_y+line)
+                    else:
+                        draw.text((start_x, start_y+line), i+suffix, fill=color, font=font,anchor='rt')
+                else:
+                    draw.text((start_x, start_y+line), i+suffix, fill=color, font=font,anchor='rt')
                 item_index = list(str_dict.keys()).index(j)
-                
                 if once==True:
-                    print(f'Karşılaştırılan:{compress_list[item_index].isim}\n Önce Fiyat: {compress_list[item_index].dun}, Bugün Fiyat: {compress_list[item_index].bugun}')
                     if compress_list[item_index].dun<compress_list[item_index].bugun:
                         img.paste(up_arr,(start_x+18,start_y+line-4), up_arr)
                     elif compress_list[item_index].dun>compress_list[item_index].bugun:
@@ -164,15 +174,17 @@ def index():
 
         # Drawing old values
         draw_table(354,253,item_send_biber_once,(50, 141, 168),font,once=True,compress_list=class_request_for(biberler.values()))
-        draw_table(854,253,item_send_domates_once,(50, 141, 168),font,once=True,compress_list=class_request_for(domatesler.values()))
+        draw_table(854,253,item_send_domates_once,(50, 141, 168),font,once=True,compress_list=class_request_for(domatesler.values()),ex_args='domates-salkim',ex_blank=55,font_size=18)
         draw_table(854,423,item_send_salatalik_once,(50, 141, 168),font,once=True,compress_list=class_request_for(salataliklar.values()))
         draw_table(854,528,patlican_once,(50, 141, 168),font,once=True,compress_list=Fiyatlar('patlican',patlican_once,patlican_bugun),single=True)
+        draw_table(870,284,"- "+salkim_max_once,(50, 141, 168),font,once=False,single=True)
         
         # Drawing Today values and arrows
         draw_table(464,253,item_send_biber_bugun,(0, 0, 0),font,once=False)
-        draw_table(964,253,item_send_domates_bugun,(0, 0, 0),font,once=False)
+        draw_table(964,253,item_send_domates_bugun,(0, 0, 0),font,once=False, ex_args='domates-salkim',ex_blank=24,font_size=15)
         draw_table(964,423,item_send_salatalik_bugun,(0, 0, 0),font,once=False)
         draw_table(964,528,patlican_bugun,(0, 0, 0),font,once=False,single=True)
+        draw_table(1000,284,"- "+salkim_max_bugun,(0, 0, 0),ImageFont.truetype("pillow/font.ttf", 15),once=False,single=True)
         
         # Drawing title
         font = ImageFont.truetype("pillow/font.ttf", 58)
@@ -182,8 +194,12 @@ def index():
         
         #       SQL SIDE        #
 
-        def sql_edit(input_list,obje):
-            idcount=1
+        def sql_edit(input_list,obje,specific_id=None):
+            if specific_id == None:
+                idcount=1
+            else:
+                idcount = specific_id
+            
             for item in input_list:
                 with app.app_context():
                     item_to_update = db.session.get(obje, idcount)  
@@ -193,8 +209,7 @@ def index():
                 idcount+=1
             return
         
-        sql_edit(list(item_send_biber_bugun.values())+list( item_send_domates_bugun.values())+list(item_send_salatalik_bugun.values())+[patlican_bugun],Sebze)
-        
+        sql_edit(list(item_send_biber_bugun.values())+list( item_send_domates_bugun.values())+list(item_send_salatalik_bugun.values())+[patlican_bugun]+[salkim_max_bugun],Sebze)
         return redirect('/success/')
     else:
         return render_template('index.html', biberler=biberler, domatesler=domatesler, salataliklar=salataliklar, items_dict=PyVars.items_dict)
@@ -209,8 +224,10 @@ def resim():
     return redirect('static/yazili_resim.png')
 
 if __name__ == "__main__":
-    if Heroku == False:
-        app.run()
+    if RunNet == False:
+        app.run(debug=False, host="0.0.0.0")
+        with app.app_context():
+            pass
     else:
         app.run()
     
