@@ -1,3 +1,8 @@
+## IMPORTANT LIBRARIES ##
+# flask -> python web framework
+# Pillow -> picture editor
+
+
 from flask import Flask, render_template, url_for, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -9,7 +14,7 @@ RunNet = False
 # Sebze Listeleri
 
 
-class Fiyatlar:
+class Fiyatlar: # inits
     def __init__(self,isim,dun,bugun):
         self.isim = isim
         self.dun = float(dun)
@@ -44,9 +49,10 @@ salataliklar={"Salatalık":"salatalik",
 }
 
 app = Flask(__name__) # To initalize our Flask app
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sebzeler.db' # /// for relative path. Our database will be secured in test.db
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sebzeler.db' # /// for relative path. Our database will be secured in s.db
 db = SQLAlchemy(app) # We finally create an database for 'app'
-
+app.config['SQLALCHEMY_ECHO'] = True  # SQL sorgularını gösterir
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True  # Modifikasyonları izler
 
 class Sebze(db.Model): # Sebze class for init
     id = db.Column(db.Integer, primary_key=True)
@@ -82,21 +88,6 @@ def index():
     if request.method == "POST":
         
         #       IMAGE CREATION SIDE        #
-        def transparant_maker(image_way):
-            img = Image.open(image_way) 
-            rgba = img.convert("RGBA")
-            datas = rgba.getdata()
-            newData = [] 
-            for item in datas: 
-                if item[0] == 0 and item[1] == 0 and item[2] == 0:  # finding black colour by its RGB value 
-                    # storing a transparent value when we find a black colour 
-                    newData.append((255, 255, 255, 0)) 
-                else: 
-                    newData.append(item)  # other colours remain unchanged 
-            
-            rgba.putdata(newData) 
-            return rgba
-            
             
         img= Image.open("pillow/main_schema.png").convert("RGBA")
         up_arr = Image.open("pillow/up.png").convert("RGBA")
@@ -128,14 +119,19 @@ def index():
         item_send_biber_once = request_for(biberler.values(),once=True)
         item_send_domates_once = request_for(domatesler.values(),once=True)
         item_send_salatalik_once = request_for(salataliklar.values(),once=True)
-        patlican_once= request.form['patlican-once']
-        salkim_max_once = request.form['domates-salkim-max-once']
+        
+        salkim_max_once = request.form['domates-salkim-max-once'] #Salkim range
+        patlican_once= request.form['patlican-once'] # Single category
+        kabak_once= request.form['kabak-once'] # Single category 2
+        
         
         item_send_biber_bugun = request_for(biberler.values(),once=False)
         item_send_domates_bugun = request_for(domatesler.values(),once=False)
         item_send_salatalik_bugun = request_for(salataliklar.values(),once=False)
-        patlican_bugun = request.form['patlican-bugun']
         salkim_max_bugun = request.form['domates-salkim-max-bugun']
+        patlican_bugun = request.form['patlican-bugun']
+        kabak_bugun= request.form['kabak-bugun']
+        
             
         def draw_table(start_x,start_y,str_dict,color,font,once,line=0,lineadder=31,compress_list=None,suffix=" TL",single=False,ex_args=None,ex_blank=None,font_size=None):
             print(ex_args)
@@ -177,6 +173,7 @@ def index():
         draw_table(854,253,item_send_domates_once,(50, 141, 168),font,once=True,compress_list=class_request_for(domatesler.values()),ex_args='domates-salkim',ex_blank=55,font_size=18)
         draw_table(854,423,item_send_salatalik_once,(50, 141, 168),font,once=True,compress_list=class_request_for(salataliklar.values()))
         draw_table(854,528,patlican_once,(50, 141, 168),font,once=True,compress_list=Fiyatlar('patlican',patlican_once,patlican_bugun),single=True)
+        draw_table(854,606,kabak_once,(50, 141, 168),font,once=True,compress_list=Fiyatlar('kabak',kabak_once,kabak_bugun),single=True)
         draw_table(870,284,"- "+salkim_max_once,(50, 141, 168),font,once=False,single=True)
         
         # Drawing Today values and arrows
@@ -184,6 +181,7 @@ def index():
         draw_table(964,253,item_send_domates_bugun,(0, 0, 0),font,once=False, ex_args='domates-salkim',ex_blank=24,font_size=15)
         draw_table(964,423,item_send_salatalik_bugun,(0, 0, 0),font,once=False)
         draw_table(964,528,patlican_bugun,(0, 0, 0),font,once=False,single=True)
+        draw_table(964,606,kabak_bugun,(0, 0, 0),font,once=False,single=True)
         draw_table(1000,284,"- "+salkim_max_bugun,(0, 0, 0),ImageFont.truetype("pillow/font.ttf", 15),once=False,single=True)
         
         # Drawing title
@@ -209,7 +207,7 @@ def index():
                 idcount+=1
             return
         
-        sql_edit(list(item_send_biber_bugun.values())+list( item_send_domates_bugun.values())+list(item_send_salatalik_bugun.values())+[patlican_bugun]+[salkim_max_bugun],Sebze)
+        sql_edit(list(item_send_biber_bugun.values())+list( item_send_domates_bugun.values())+list(item_send_salatalik_bugun.values())+[patlican_bugun]+[salkim_max_bugun]+[kabak_bugun],Sebze)
         return redirect('/success/')
     else:
         return render_template('index.html', biberler=biberler, domatesler=domatesler, salataliklar=salataliklar, items_dict=PyVars.items_dict)
@@ -224,6 +222,7 @@ def resim():
     return redirect('static/yazili_resim.png')
 
 if __name__ == "__main__":
+    
     if RunNet == False:
         app.run(debug=False, host="0.0.0.0")
         with app.app_context():
