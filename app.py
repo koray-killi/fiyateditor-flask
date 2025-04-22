@@ -222,9 +222,9 @@ def resim():
     return redirect('static/yazili_resim.png')
 
 if __name__ == "__main__":
-    
+     
     if RunNet == False:
-        app.run(debug=False, host="0.0.0.0")
+        app.run(debug=True, host="0.0.0.0")
         with app.app_context():
             pass
     else:
